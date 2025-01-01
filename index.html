@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Mine Challenge</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/react/umd/react.development.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/react-dom/umd/react-dom.development.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/babel-standalone/babel.min.js"></script>
+  <script defer src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-800 text-white">
+  <div id="root" class="flex justify-center items-center min-h-screen"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const generateGrid = () => {
+      const grid = Array(5).fill(null).map(() => Array(5).fill(null));
+      let diamondCount = 0, bombCount = 0;
+
+      while (diamondCount < 20) {
+        const x = Math.floor(Math.random() * 5);
+        const y = Math.floor(Math.random() * 5);
+        if (!grid[x][y]) {
+          grid[x][y] = '💎';
+          diamondCount++;
+        }
+      }
+
+      while (bombCount < 5) {
+        const x = Math.floor(Math.random() * 5);
+        const y = Math.floor(Math.random() * 5);
+        if (!grid[x][y]) {
+          grid[x][y] = '💣';
+          bombCount++;
+        }
+      }
+      return grid;
+    };
+
+    const App = () => {
+      const [grid, setGrid] = useState(generateGrid());
+      const [revealed, setRevealed] = useState(Array(5).fill(null).map(() => Array(5).fill(false)));
+      const [score, setScore] = useState(0);
+      const [gameOver, setGameOver] = useState(false);
+
+      const handleClick = (x, y) => {
+        if (gameOver || revealed[x][y]) return;
+
+        const newRevealed = [...revealed];
+        newRevealed[x][y] = true;
+        setRevealed(newRevealed);
+
+        if (grid[x][y] === '💣') {
+          setGameOver(true);
+        } else if (grid[x][y] === '💎') {
+          setScore((prev) => prev + 1.1);
+        }
+      };
+
+      const resetGame = () => {
+        setGrid(generateGrid());
+        setRevealed(Array(5).fill(null).map(() => Array(5).fill(false)));
+        setScore(0);
+        setGameOver(false);
+      };
+
+      return (
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-6">🔘 Diamond Mine Challenge 🔘</h1>
+          <div className="grid grid-cols-5 gap-2">
+            {grid.map((row, x) =>
+              row.map((cell, y) => (
+                <button
+                  key={`${x}-${y}`}
+                  onClick={() => handleClick(x, y)}
+                  className={`w-12 h-12 rounded-md ${
+                    revealed[x][y] ? "bg-gray-600" : "bg-gray-400"
+                  } text-xl font-bold`}
+                >
+                  {revealed[x][y] ? cell : "❓"}
+                </button>
+              ))
+            )}
+          </div>
+          <div className="mt-6">
+            <p className="text-xl">Score: {score.toFixed(1)}</p>
+            {gameOver && <p className="text-red-500 text-xl">💥 Game Over!</p>}
+            <button
+              onClick={resetGame}
+              className="mt-4 px-4 py-2 bg-blue-500 rounded hover:bg-blue-700"
+            >
+              Restart Game
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
